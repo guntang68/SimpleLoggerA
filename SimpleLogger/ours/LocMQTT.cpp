@@ -109,9 +109,6 @@ void LocMQTT::reconnect() {
 			log_w("reconnect failed");
 			WiFi.reconnect();
 			break;
-//			delay(5000);
-//			log_w("retry");
-
 		}
 	}
 }

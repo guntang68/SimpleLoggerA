@@ -10,10 +10,11 @@
 
 #include "Arduino.h"
 #include <LocMQTT.h>
+#include <pins.h>
 
-#define MUX_S0 5
-#define MUX_S1 17
-#define MUX_S2 16
+//#define MUX_S0 5
+//#define MUX_S1 17
+//#define MUX_S2 16
 
 class LocMando {
 private:

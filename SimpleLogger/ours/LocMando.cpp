@@ -5,9 +5,9 @@
  *      Author: annuar
  */
 
-#include <LocMando.h>
-#include <ManNMEA.h>
-#include			<TimeLib.h>
+#include	<LocMando.h>
+#include	<ManNMEA.h>
+#include	<TimeLib.h>
 
 
 LocMando		*iniLocMando;
@@ -33,15 +33,15 @@ void LocMando::PortMando(bool select)
 	pinMode(MUX_S0, OUTPUT);
 	pinMode(MUX_S1, OUTPUT);
 	pinMode(MUX_S2, OUTPUT);
+
+	iniLocMando->enable = select;
+
 	if(select){
 		digitalWrite(MUX_S0, LOW);			//mando 0x04
 		digitalWrite(MUX_S1, LOW);
 		digitalWrite(MUX_S2, HIGH);
-		iniLocMando->enable = true;
 	}
-	else{
-		iniLocMando->enable = false;
-	}
+
 }
 
 void LocMando::_processMandoData() {
