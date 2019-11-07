@@ -13,6 +13,7 @@
 #include <pages.h>
 #include <LocSpiff.h>
 #include <Update.h>
+#include <LocMando.h>
 
 #ifndef OURS_LOCDIRECTOTA_H_
 #define OURS_LOCDIRECTOTA_H_
@@ -32,6 +33,8 @@ public:
 	LocDirectOTA(int core, int loopDelay, int *lookVal);
 	static void loop(void * parameter);
 	String getMAC();
+	LocMando *siniLocMando;
+
 
 
 };

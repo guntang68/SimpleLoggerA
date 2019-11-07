@@ -22,7 +22,7 @@
 //const char* mqtt_server = "103.75.190.251";
 //const char* mqtt_server = "192.168.43.114";
 //const char* mqtt_server =   "127.0.0.1";
-const char* mqtt_server = "192.168.1.111";
+const char* mqtt_server = "172.105.117.29";
 
 
 
@@ -54,6 +54,13 @@ void LocMQTT::update() {
 	}
 	else{
 		client.loop();
+	}
+
+	if(!WiFi.isConnected()){
+		log_w("Wifi need to reconnect");
+		WiFi.reconnect();
+		iniMQTT->reconnect();
+
 	}
 }
 
@@ -100,8 +107,10 @@ void LocMQTT::reconnect() {
 			break;
 		} else {
 			log_w("reconnect failed");
-			delay(5000);
-			log_w("retry");
+			WiFi.reconnect();
+			break;
+//			delay(5000);
+//			log_w("retry");
 
 		}
 	}

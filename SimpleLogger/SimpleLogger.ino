@@ -4,12 +4,16 @@
 #include <LocMQTT.h>
 #include <LocDirectOTA.h>
 #include <ArduinoJson.h>
+#include <LocOLED.h>
+#include <LocMando.h>
 
 //TODO	need to detect WiFi lost connection
 
 LocWiFi			*locWiFi;
 LocMQTT			*locMqtt;
 LocDirectOTA	*locDirectOTA;
+LocOLED			*locOLED;
+LocMando		*locMando;
 
 int gValWiFi = lw_wifi_off;
 int gValDirectOTA = 0;
@@ -26,7 +30,7 @@ bool gmqttEnabled=true;
 //=================================================================================================
 void setup()
 {
-	Serial.begin(912600, SERIAL_8N1, 3, 1);
+	Serial.begin(9600, SERIAL_8N1, 3, 1); //Mando dan Sonar
 	delay(300);
 	log_i("\n\n\n\nSalam Dunia dari %s\n\n\n\n", __FILE__);
 	log_i("Memory = %d", String(esp_get_free_heap_size()).c_str());
@@ -56,15 +60,30 @@ void setup()
 	locMqtt = new LocMQTT(&gMAC);
 
 	locDirectOTA = new LocDirectOTA(0,10, &gValDirectOTA);
+	locOLED = new LocOLED(0);
+	locMando = new LocMando(0);
+
+	locDirectOTA->siniLocMando = locMando;
+	locMando->siniLocMQTT = locMqtt;
+
+
+
+
 
 }
 
 //=================================================================================================
+
+int cnt=0;
+
 void loop()
 {
-//Add your repeated code here
-
 	delay(1000);
+	cnt++;
+	if(cnt == 15){
+		locMqtt->hantar("mando", "kasi enable");
+		locMando->PortMando(true);
+	}
 
 	_tickNyamuk();
 }
@@ -76,7 +95,7 @@ inline void _tickNyamuk() {
 		gtickNyamukTime = millis();
 		gtockBeat = !gtockBeat;
 		locMqtt->hantar(gMAC, gtockBeat?"1":"0");
-		log_i("beat ---------------------------------> %s", gMAC.c_str());
+//		log_i("beat ---------------------------------> %s", gMAC.c_str());
 	}
 }
 //=================================================================================================
@@ -99,9 +118,9 @@ inline void _setupSPIFFiles(bool format) {
 		//create SSID credentials
 		locSpiff->appendFile("/ssid.txt", "sta,ideapad,sawabatik1\n");
 		locSpiff->appendFile("/ssid.txt", "sta,AndroidAP,sawabatik\n");
-		locSpiff->appendFile("/ssid.txt", "sta,GF_Wifi_2.4GHz,Gr33nF1nd3r2018\n");
-//		locSpiff->appendFile("/ssid.txt", "ap,NiNe,AsamBoiqqq\n");
-		locSpiff->appendFile("/ssid.txt", "ap,GreenFinderIOT,0xadezcsw1\n");
+//		locSpiff->appendFile("/ssid.txt", "sta,GF_Wifi_2.4GHz,Gr33nF1nd3r2018\n");
+		locSpiff->appendFile("/ssid.txt", "ap,NiNe,AsamBoiqqq\n");
+//		locSpiff->appendFile("/ssid.txt", "ap,GreenFinderIOT,0xadezcsw1\n");
 
 		log_i("Default files created");
 	}

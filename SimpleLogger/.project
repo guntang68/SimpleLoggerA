@@ -47,6 +47,11 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/ArduinoJson/6.9.1</locationURI>
 		</link>
 		<link>
+			<name>libraries/ESP8266_and_ESP32_Oled_Driver_for_SSD1306_display</name>
+			<type>2</type>
+			<location>/home/annuar/Arduino/hardware/espressif/esp32/libraries/ESP8266_and_ESP32_Oled_Driver_for_SSD1306_display</location>
+		</link>
+		<link>
 			<name>libraries/ESPmDNS</name>
 			<type>2</type>
 			<location>/home/annuar/Arduino/hardware/espressif/esp32/libraries/ESPmDNS</location>
@@ -60,6 +65,11 @@
 			<name>libraries/PubSubClient</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/PubSubClient/2.7.0</locationURI>
+		</link>
+		<link>
+			<name>libraries/SPI</name>
+			<type>2</type>
+			<location>/home/annuar/Arduino/hardware/espressif/esp32/libraries/SPI</location>
 		</link>
 		<link>
 			<name>libraries/SPIFFS</name>
@@ -85,6 +95,11 @@
 			<name>libraries/WiFi</name>
 			<type>2</type>
 			<location>/home/annuar/Arduino/hardware/espressif/esp32/libraries/WiFi</location>
+		</link>
+		<link>
+			<name>libraries/Wire</name>
+			<type>2</type>
+			<location>/home/annuar/Arduino/hardware/espressif/esp32/libraries/Wire</location>
 		</link>
 	</linkedResources>
 </projectDescription>

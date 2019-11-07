@@ -30,6 +30,7 @@ private:
 	std::vector<std::vector<String>> _sList;
 	int 	_loopDelay;
 	int * 	_lookVal;
+	int *	_connectionIs;
 public:
 	LocWiFi(int core, int loopDelay, int *lookVal);
 	virtual ~LocWiFi();

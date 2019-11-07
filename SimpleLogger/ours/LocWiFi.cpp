@@ -18,6 +18,7 @@ LocWiFi::LocWiFi(int core, int loopDelay, int *lookVal) {
 	iniWiFi = this;
 	iniWiFi->_loopDelay = loopDelay;
 	iniWiFi->_lookVal = lookVal;
+	iniWiFi->_connectionIs = lookVal;
 
 	wifiMulti = new WiFiMulti;
 	wifiMulti->APlistClean();
@@ -57,6 +58,7 @@ void LocWiFi::_openConnection(int as) {
 		if(staFlag){
 			log_i("Start ...");
 			wifiMulti->run();
+
 			log_i("... End SSID=%s IP=%s", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 		}
 	}
@@ -66,6 +68,8 @@ void LocWiFi::_openConnection(int as) {
 
 void LocWiFi::loop(void* parameter) {
 	//init
+
+
 
 
 	while(true){
@@ -78,10 +82,8 @@ void LocWiFi::loop(void* parameter) {
 				break;
 			case lw_wifi_apsta:
 				iniWiFi->_openConnection(lw_wifi_apsta);
-
 				break;
 			case lw_wifi_off:
-
 				break;
 			default:
 				break;

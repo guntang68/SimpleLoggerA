@@ -8,17 +8,28 @@
 #include <LocDirectOTA.h>
 #include <WebServer.h>
 
+
 LocDirectOTA	*iniDirectOTA;
 TaskHandle_t 	loopDirectOTA= NULL;
+
+
 
 WebServer server(80);
 JsonHandler *jsonHandler;
 
+
+
+
 LocDirectOTA::LocDirectOTA(int core, int loopDelay, int *lookVal)
 {
+
+
+
 	iniDirectOTA = this;
 	iniDirectOTA->_lookVal = lookVal;
 	iniDirectOTA->_loopDelay = loopDelay;
+
+	iniDirectOTA->siniLocMando = NULL;
 
 	jsonHandler = new JsonHandler;
 
@@ -135,6 +146,11 @@ void LocDirectOTA::_StatusViaWiFi(void) {
 	msg += "RSSI = " + String(rssi) + "</br>";
 	msg += "<hr>";
 
+	msg += iniDirectOTA->siniLocMando->dapatMandoText;
+
+
+	iniDirectOTA->siniLocMando->dapatMandoText = "";
+
 	server.sendHeader("Connection", "close");
 	server.send(200, "text/html", msg);
 
@@ -213,3 +229,4 @@ String LocDirectOTA::getMAC() {
 
 	return macID;
 }
+
