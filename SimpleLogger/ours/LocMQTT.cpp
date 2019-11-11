@@ -56,24 +56,27 @@ void LocMQTT::update() {
 		client.loop();
 	}
 
-	if(!WiFi.isConnected()){
-		log_w("Wifi need to reconnect");
-		WiFi.reconnect();
-		iniMQTT->reconnect();
-
-	}
+//	if(!WiFi.isConnected()){
+//		log_w("Wifi need to reconnect");
+//		WiFi.reconnect();
+//		iniMQTT->reconnect();
+//
+//	}
 }
 
 void LocMQTT::hantar(String t, String m) {
 	topic = t;
 	message = m;
 
-	if(client.connected() && m.length()>0){
-		m.toCharArray(tempString, m.length()+1);
-		t.toCharArray(tempTopic, t.length()+1);
-		client.publish(tempTopic, tempString);
-
+	if(WiFi.isConnected()){
+		if(client.connected() && m.length()>0){
+			m.toCharArray(tempString, m.length()+1);
+			t.toCharArray(tempTopic, t.length()+1);
+			client.publish(tempTopic, tempString);
+		}
 	}
+
+
 }
 
 void LocMQTT::callback(char* topic, byte* message, unsigned int length) {

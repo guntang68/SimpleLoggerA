@@ -6,6 +6,7 @@
 #include <ArduinoJson.h>
 #include <LocOLED.h>
 #include <LocMando.h>
+#include <LocSonar.h>
 
 //TODO	need to detect WiFi lost connection
 
@@ -14,6 +15,7 @@ LocMQTT			*locMqtt;
 LocDirectOTA	*locDirectOTA;
 LocOLED			*locOLED;
 LocMando		*locMando;
+LocSonar		*locSonar;
 
 int gValWiFi = lw_wifi_off;
 int gValDirectOTA = 0;
@@ -27,9 +29,148 @@ time_t gtickNyamukTime = 0;
 bool gtockBeat;
 bool gmqttEnabled=true;
 
+
+
+
+//boolean xisNumeric(String str)
+//{
+//    unsigned int stringLength = str.length();
+//    boolean seenDecimal = false;
+//
+//    if (stringLength == 0) {
+//        return false;
+//    }
+//
+//    for(unsigned int i = 0; i < stringLength; ++i) {
+//        if (isDigit(str.charAt(i))) {
+//            continue;
+//        }
+//
+//        if (str.charAt(i) == '.') {
+//            if (seenDecimal) {
+//                return false;
+//            }
+//            seenDecimal = true;
+//            continue;
+//        }
+//        return false;
+//    }
+//    return true;
+//}
+
+
+//double getSTD(int data[])
+//{
+//
+//	int i, sum = 0;
+//	double avg;
+//
+//	for (i = 0; i < 5; ++i) {
+//		sum += data[i];
+//	}
+//	avg = double(sum) / 5;
+//
+//	return avg;
+//
+//
+//}
+
+//void DataFromString(String *str)
+//{
+//
+//	int size = 36;
+//	int item[size], start=0, end=0, pos=0;
+//	int index = 0, tempNum=0;
+//	bool pass;
+//
+//	String Temp;
+//
+//	item[0]=0;
+//
+//	//tukarka ke dalam array
+//	while(true){
+//		pass = false;
+//		start = str->indexOf("R",pos);
+//		if(start != -1){
+//			pos = start + 1;
+//			end = str->indexOf("R",pos);
+//			if(end != -1){
+//				Temp = str->substring(start+1,end);
+//				if(Temp.length() > 0 && xisNumeric(Temp)){
+//
+//					tempNum = Temp.toInt();
+//
+//					if((tempNum != 500) && (tempNum != 4999) && (tempNum != 9999)){
+//						log_i("Index = %d: Start = %d, End = %d, dapat = %s", index, start, end, Temp.c_str());
+//
+//						item[index] =tempNum;
+//						index ++;
+//						item[index] = 0;
+//						if(index == size-1){
+//							break;
+//						}
+//					}
+//					pass = true;
+//				}
+//			}
+//		}
+//		if(!pass){
+//			break;
+//		}
+//	}
+//
+//	double sum=0, mean=0;
+//	int i, below=0, above=0;
+//
+//	for(i=0; i<index; i++){
+//		sum += item[i];
+//	}
+//	mean = sum / i;
+//
+//	for(i=0; i<index; i++){
+//		if(item[i] > mean){
+//			above++;
+//		}
+//		else{
+//			below++;
+//		}
+//	}
+//	log_i("above %d; below %d", above, below);
+//
+//	int j;
+//
+//	if(below > above){
+//		sum = 0;
+//		j = 0;
+//		for(i=0; i<index; i++){
+//			if(item[i] < mean){
+//				j++;
+//				sum += item[i];
+//			}
+//		}
+//		mean = sum / j;
+//		log_i("avg on below %f", mean);
+//	}
+//	else{
+//		sum = 0;
+//		j = 0;
+//		for(i=0; i<index; i++){
+//			if(item[i] > mean){
+//				j++;
+//				sum += item[i];
+//			}
+//		}
+//		mean = sum / j;
+//		log_i("avg on above %f", mean);
+//	}
+//
+//}
+
 //=================================================================================================
 void setup()
 {
+
+//	Serial.begin(921600, SERIAL_8N1, 3, 1); //Mando dan Sonar
 	Serial.begin(9600, SERIAL_8N1, 3, 1); //Mando dan Sonar
 	delay(300);
 	log_i("\n\n\n\nSalam Dunia dari %s\n\n\n\n", __FILE__);
@@ -44,6 +185,18 @@ void setup()
 		digitalWrite(2, LOW);
 		delay(100);
 	}
+
+//	String dataRaw = "empIR500R5642R5640R5638R5638R5636R5635R5634R5632R5634R5634R5634R5634R5633R5635R5635R6589R6588R6586R6585R6580R6578R5634R5632R5633R5632R5632R5632R5631R5631R5631R5631R5631";
+//	String dataRaw = "empIR5642R5640R5632R5652R5641R5642R5640R5632R5652R5641R5642R5640R5632R5652R5641R5642R5640R5632R5652R5641R5642R5640R5632R5652R5641R5642R5640R5632R5652R5641R5642R5640R5632R5652R5641";
+
+//	String dataRaw = "R4820R5244R5138R5186R4787R4890R5110R5004R5062R5131R5157R4997R4935R4798R4777R5208R5242R4785R4945R5043R5046R3943R4199R3892R4065R4055R4237R3874R4151R4060R3789R3784R";
+
+//	DataFromString(&dataRaw);
+
+
+//	while(1){
+//
+//	}
 
 	_setupSPIFFiles(false);	//if true -> delete all files & create default file
 
@@ -62,13 +215,15 @@ void setup()
 	locDirectOTA = new LocDirectOTA(0,10, &gValDirectOTA);
 	locOLED = new LocOLED(0);
 	locMando = new LocMando(0);
+	locSonar = new LocSonar(0);
 
 	locDirectOTA->siniLocMando = locMando;
 	locMando->siniLocMQTT = locMqtt;
+	locSonar->siniLocMQTT = locMqtt;
 
 
 
-
+	locMando->PortMando(true);
 
 }
 
@@ -80,8 +235,28 @@ void loop()
 {
 	delay(1000);
 	cnt++;
-	if(cnt == 15){
-		locMqtt->hantar("mando", "kasi enable");
+//	if(cnt == 15){
+//		locMqtt->hantar("mando", "kasi enable");
+//		locMando->PortMando(true);
+//	}
+//	if(cnt == 30){
+//		gValWiFi = lw_wifi_apsta;
+//	}
+
+
+	if((!WiFi.isConnected()) & (cnt > 15)){
+		cnt = 0;
+		gValWiFi = lw_wifi_apsta;
+
+	}
+
+	if((cnt % 20) == 0){
+		locMando->PortMando(false);
+		locSonar->PortSonar(true);
+	}
+
+	if(locSonar->done){
+		locSonar->PortSonar(false);
 		locMando->PortMando(true);
 	}
 
@@ -118,7 +293,7 @@ inline void _setupSPIFFiles(bool format) {
 		//create SSID credentials
 		locSpiff->appendFile("/ssid.txt", "sta,ideapad,sawabatik1\n");
 		locSpiff->appendFile("/ssid.txt", "sta,AndroidAP,sawabatik\n");
-//		locSpiff->appendFile("/ssid.txt", "sta,GF_Wifi_2.4GHz,Gr33nF1nd3r2018\n");
+		locSpiff->appendFile("/ssid.txt", "sta,GF_Wifi_2.4GHz,Gr33nF1nd3r2018\n");
 		locSpiff->appendFile("/ssid.txt", "ap,NiNe,AsamBoiqqq\n");
 //		locSpiff->appendFile("/ssid.txt", "ap,GreenFinderIOT,0xadezcsw1\n");
 

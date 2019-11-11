@@ -18,6 +18,8 @@ WebServer server(80);
 JsonHandler *jsonHandler;
 
 
+String makeTwoDigits(int digits);
+
 
 
 LocDirectOTA::LocDirectOTA(int core, int loopDelay, int *lookVal)
@@ -137,12 +139,14 @@ void LocDirectOTA::_handleConfDDMS()
 void LocDirectOTA::_StatusViaWiFi(void) {
 	String msg="";
 
+	String timenow = makeTwoDigits(hour())+":"+makeTwoDigits(minute())+":"+makeTwoDigits(second());
+
 	long rssi = WiFi.RSSI();
 
 	msg  = "MAC = " + iniDirectOTA->getMAC() + "</br>";
 	msg += "IP = " + WiFi.localIP().toString() + "</br>";
 	msg += "Live = " + String(millis()/1000) + "</br>";
-	msg += "Time = xxx</br>";
+	msg += "Time = " + timenow + "</br>";
 	msg += "RSSI = " + String(rssi) + "</br>";
 	msg += "<hr>";
 
@@ -228,5 +232,16 @@ String LocDirectOTA::getMAC() {
 	macID.toUpperCase();
 
 	return macID;
+}
+
+inline String makeTwoDigits(int digits)
+{
+	if(digits < 10) {
+		String i = '0'+String(digits);
+		return i;
+	}
+	else {
+		return String(digits);
+	}
 }
 

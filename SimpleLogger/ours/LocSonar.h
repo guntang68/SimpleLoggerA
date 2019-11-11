@@ -16,12 +16,14 @@ class LocSonar {
 private:
 	bool 	enable;
 	String 	_sonarRaw;
-	float 	_getDistance(String data);
+	float 	_getDistance(String str);
 	double 	_sonarDistance;
 public:
 	LocSonar(int core);
 	void PortSonar(bool select);
 	static void loop(void * parameter);
+	LocMQTT *siniLocMQTT;
+	bool done;
 
 };
 

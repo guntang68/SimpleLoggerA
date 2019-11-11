@@ -37,6 +37,7 @@ void LocWiFi::_openConnection(int as) {
 	delete ls;
 
 	wifiMulti->APlistClean();
+	WiFi.disconnect(0, 1);
 
 	log_i("INITIAL SSID=%s IP=%s", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 
@@ -58,6 +59,7 @@ void LocWiFi::_openConnection(int as) {
 		if(staFlag){
 			log_i("Start ...");
 			wifiMulti->run();
+
 
 			log_i("... End SSID=%s IP=%s", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 		}
