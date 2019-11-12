@@ -12,7 +12,7 @@ TaskHandle_t 	loopLocOLED= NULL;
 
 bool MandoWake = false;
 bool mandoMissing = false;
-double sonarDistance = 1200;
+
 String PlainType1Text="PlainType1Text";
 String PlainType2Text="PlainType2Text";
 double dProgress=0;
@@ -67,6 +67,7 @@ LocOLED::LocOLED(int core) {
 	display.setTextAlignment(TEXT_ALIGN_LEFT);
 	display.flipScreenVertically();
 
+	iniLocOLED->sonarDistance = 1200;
 
 
 	frameScroll = true;
@@ -330,7 +331,7 @@ inline void aGraph(OLEDDisplay* display, OLEDDisplayUiState* state, int16_t x, i
 //
 //		}
 
-		display->drawString(72 , 50, String(sonarDistance,0) + "mm");
+		display->drawString(72 , 50, String(iniLocOLED->sonarDistance,0) + "mm");
 		display->drawCircle(94, 25, 13);
 
 		double rad = WD*3.14/180;

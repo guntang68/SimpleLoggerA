@@ -10,6 +10,7 @@
 
 #include "Arduino.h"
 #include <LocMQTT.h>
+#include <LocOLED.h>
 #include <pins.h>
 
 class LocSonar {
@@ -23,6 +24,7 @@ public:
 	void PortSonar(bool select);
 	static void loop(void * parameter);
 	LocMQTT *siniLocMQTT;
+	LocOLED *siniLocOLED;
 	bool done;
 
 };

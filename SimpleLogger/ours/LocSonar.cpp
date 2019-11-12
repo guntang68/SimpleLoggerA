@@ -29,12 +29,13 @@ void LocSonar::loop(void* parameter) {
 				}
 
 
-				if((millis()-sonarReadTime)>5000 && !iniLocSonar->done){
+				if((millis()-sonarReadTime)>6000 && !iniLocSonar->done){
 					digitalWrite(13, LOW);			//Sonar POWER OFF
 					iniLocSonar->_sonarDistance = iniLocSonar->_getDistance(iniLocSonar->_sonarRaw);
 					iniLocSonar->done = true;
 					iniLocSonar->enable = false;
 					iniLocSonar->siniLocMQTT->hantar("Sonar", String(iniLocSonar->_sonarDistance));
+					iniLocSonar->siniLocOLED->sonarDistance = iniLocSonar->_sonarDistance;
 
 				}
 
@@ -196,6 +197,7 @@ LocSonar::LocSonar(int core) {
 	iniLocSonar = this;
 
 	iniLocSonar->siniLocMQTT = NULL;
+	iniLocSonar->siniLocOLED = NULL;
 	iniLocSonar->enable = false;
 	iniLocSonar->_sonarRaw = "";
 	iniLocSonar->_sonarDistance = 0;

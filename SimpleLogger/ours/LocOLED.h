@@ -36,6 +36,7 @@ public:
 	LocOLED(int core);
 	static void loop(void * parameter);
 	void setProgress(double value);
+	double sonarDistance;
 
 };
 
