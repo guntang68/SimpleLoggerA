@@ -7,6 +7,9 @@
 #include <LocOLED.h>
 #include <LocMando.h>
 #include <LocSonar.h>
+#include <LocAirmar.h>
+
+
 
 //TODO	need to detect WiFi lost connection
 
@@ -16,6 +19,7 @@ LocDirectOTA	*locDirectOTA;
 LocOLED			*locOLED;
 LocMando		*locMando;
 LocSonar		*locSonar;
+LocAirmar		*locAirmar;
 
 int gValWiFi = lw_wifi_off;
 int gValDirectOTA = 0;
@@ -30,148 +34,18 @@ bool gtockBeat;
 bool gmqttEnabled=true;
 
 
-
-
-//boolean xisNumeric(String str)
-//{
-//    unsigned int stringLength = str.length();
-//    boolean seenDecimal = false;
-//
-//    if (stringLength == 0) {
-//        return false;
-//    }
-//
-//    for(unsigned int i = 0; i < stringLength; ++i) {
-//        if (isDigit(str.charAt(i))) {
-//            continue;
-//        }
-//
-//        if (str.charAt(i) == '.') {
-//            if (seenDecimal) {
-//                return false;
-//            }
-//            seenDecimal = true;
-//            continue;
-//        }
-//        return false;
-//    }
-//    return true;
-//}
-
-
-//double getSTD(int data[])
-//{
-//
-//	int i, sum = 0;
-//	double avg;
-//
-//	for (i = 0; i < 5; ++i) {
-//		sum += data[i];
-//	}
-//	avg = double(sum) / 5;
-//
-//	return avg;
-//
-//
-//}
-
-//void DataFromString(String *str)
-//{
-//
-//	int size = 36;
-//	int item[size], start=0, end=0, pos=0;
-//	int index = 0, tempNum=0;
-//	bool pass;
-//
-//	String Temp;
-//
-//	item[0]=0;
-//
-//	//tukarka ke dalam array
-//	while(true){
-//		pass = false;
-//		start = str->indexOf("R",pos);
-//		if(start != -1){
-//			pos = start + 1;
-//			end = str->indexOf("R",pos);
-//			if(end != -1){
-//				Temp = str->substring(start+1,end);
-//				if(Temp.length() > 0 && xisNumeric(Temp)){
-//
-//					tempNum = Temp.toInt();
-//
-//					if((tempNum != 500) && (tempNum != 4999) && (tempNum != 9999)){
-//						log_i("Index = %d: Start = %d, End = %d, dapat = %s", index, start, end, Temp.c_str());
-//
-//						item[index] =tempNum;
-//						index ++;
-//						item[index] = 0;
-//						if(index == size-1){
-//							break;
-//						}
-//					}
-//					pass = true;
-//				}
-//			}
-//		}
-//		if(!pass){
-//			break;
-//		}
-//	}
-//
-//	double sum=0, mean=0;
-//	int i, below=0, above=0;
-//
-//	for(i=0; i<index; i++){
-//		sum += item[i];
-//	}
-//	mean = sum / i;
-//
-//	for(i=0; i<index; i++){
-//		if(item[i] > mean){
-//			above++;
-//		}
-//		else{
-//			below++;
-//		}
-//	}
-//	log_i("above %d; below %d", above, below);
-//
-//	int j;
-//
-//	if(below > above){
-//		sum = 0;
-//		j = 0;
-//		for(i=0; i<index; i++){
-//			if(item[i] < mean){
-//				j++;
-//				sum += item[i];
-//			}
-//		}
-//		mean = sum / j;
-//		log_i("avg on below %f", mean);
-//	}
-//	else{
-//		sum = 0;
-//		j = 0;
-//		for(i=0; i<index; i++){
-//			if(item[i] > mean){
-//				j++;
-//				sum += item[i];
-//			}
-//		}
-//		mean = sum / j;
-//		log_i("avg on above %f", mean);
-//	}
-//
-//}
+DynamicJsonDocument jDoc(4000);
+String katun="";
 
 //=================================================================================================
 void setup()
 {
 
-//	Serial.begin(921600, SERIAL_8N1, 3, 1); //Mando dan Sonar
-	Serial.begin(9600, SERIAL_8N1, 3, 1); //Mando dan Sonar
+//	Serial.begin(921600, SERIAL_8N1,  3,  1);	//Mando dan Sonar
+	Serial.begin(  9600, SERIAL_8N1,  3,  1);	//Mando dan Sonar
+	Serial2.begin( 4800, SERIAL_8N1, 33, 64);	//Airmar
+
+
 	delay(300);
 	log_i("\n\n\n\nSalam Dunia dari %s\n\n\n\n", __FILE__);
 	log_i("Memory = %d", String(esp_get_free_heap_size()).c_str());
@@ -185,6 +59,30 @@ void setup()
 		digitalWrite(2, LOW);
 		delay(100);
 	}
+
+	//============================================================================================
+
+
+
+	jDoc["1"] = "satu"; // XF7TDK
+	jDoc["2"] = "xxxxxxxxxxxxxxxxxxxxx";
+	jDoc["3"] = "tiga";
+
+
+
+
+	serializeJsonPretty(jDoc, katun);
+
+
+
+//	while(true){
+//		delay(100);
+//	}
+	//============================================================================================
+
+
+
+
 
 	_setupSPIFFiles(false);	//if true -> delete all files & create default file
 
@@ -204,6 +102,7 @@ void setup()
 	locOLED = new LocOLED(0);
 	locMando = new LocMando(0);
 	locSonar = new LocSonar(0);
+	locAirmar = new LocAirmar(0);
 
 	locDirectOTA->siniLocMando = locMando;
 	locMando->siniLocMQTT = locMqtt;
@@ -213,6 +112,8 @@ void setup()
 
 
 	locMando->PortMando(true);
+
+
 
 }
 
@@ -235,6 +136,7 @@ void loop()
 
 	if((!WiFi.isConnected()) & (cnt > 15)){
 		cnt = 0;
+		log_w("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww??????");
 		gValWiFi = lw_wifi_apsta;
 
 	}
@@ -242,6 +144,9 @@ void loop()
 	if((cnt % 20) == 0){
 		locMando->PortMando(false);
 		locSonar->PortSonar(true);
+
+
+		locMqtt->hantar("jsondata", katun);
 	}
 
 	if(locSonar->done){
@@ -268,9 +173,9 @@ inline void _setupSPIFFiles(bool format) {
 	FileInfo_t	info;
 
 	locSpiff = new LocSpiff("_setupSPIFFiles");
-	log_i("aaa");
+
 	locSpiff->listAllFiles();
-	log_i("bbb");
+
 	if(format){
 		log_i("deleting files ...");
 		locSpiff->format();

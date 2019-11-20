@@ -58,6 +58,15 @@ void LocWiFi::_openConnection(int as) {
 		}
 		if(staFlag){
 			log_i("Start ...");
+
+
+			while(WiFi.status() == WL_CONNECTED){
+
+				WiFi.disconnect();
+				delay(100);
+			}
+			log_i("Disconnect ...");
+
 			wifiMulti->run();
 
 

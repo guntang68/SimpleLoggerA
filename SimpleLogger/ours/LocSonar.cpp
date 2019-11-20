@@ -6,6 +6,7 @@
  */
 
 #include <LocSonar.h>
+#include <UtilRollAverage.h>
 
 LocSonar		*iniLocSonar;
 TaskHandle_t 	loopLocSonar= NULL;
@@ -15,73 +16,93 @@ timer_t sonarReadTime=0;
 
 boolean isNumeric(String str);
 
+UtilRollAverage *distAvg;
+UtilRollAverage *distAvgSlow;
+UtilRollAverage *distAvgFast;
+
+int LocSonar::_getNumber() {
+	int start=0, end=0, pos = 0, tempNum = 0;
+	String Temp = "";
+
+	start = iniLocSonar->_sonarRaw.indexOf("R",pos);
+	if(start != -1){
+		pos = start + 1;
+		end = iniLocSonar->_sonarRaw.indexOf("R",pos);
+		if(end != -1){
+			Temp = iniLocSonar->_sonarRaw.substring(start+1,end);
+
+			Temp.trim();
+
+			iniLocSonar->_sonarRaw = iniLocSonar->_sonarRaw.substring(start+1);
+//			log_i("Temp = %s", Temp.c_str());
+
+			if((Temp.length() > 0) && isNumeric(Temp)){
+				tempNum = Temp.toInt();
+				if((tempNum == 500) || (tempNum == 4999) || (tempNum == 9999)){
+					tempNum = 0;
+				}
+			}
+		}
+	}
+
+
+	return tempNum;
+}
+
+
 void LocSonar::loop(void* parameter) {
 	char cr;
+	int RFound=0;
+	int distance=0;
+
+	distAvg = new UtilRollAverage(80);
+
+	distAvgSlow = new UtilRollAverage(80);
+	distAvgFast = new UtilRollAverage(30);
+
 
 	while(true){
 		if(iniLocSonar->enable){
 			while(Serial.available() > 0){
 				cr = Serial.read();
-				iniLocSonar->_sonarRaw.concat(cr);
-
-				if((millis()-sonarReadTime)<1000){
-					iniLocSonar->_sonarRaw = ""; //discard initial reading
+				if(cr >= 32 && cr <= 126 ){			//printable char only
+					iniLocSonar->_sonarRaw.concat(cr);
 				}
 
+				if(cr == 'R'){
+					distance = iniLocSonar->_getNumber();
+				}
 
-				if((millis()-sonarReadTime)>6000 && !iniLocSonar->done){
+				if(distance > 0){
+					RFound ++;
+					distAvg->Update(distance);
+					distAvgFast->Update(distance);
+					distAvgSlow->Update(distance);
+//					log_i("Data = %d Diff = %f", distance, distAvgSlow->Get() - distAvgFast->Get() );
+				}
+
+				if(RFound > 36 && !iniLocSonar->done){
+					RFound = 0;
 					digitalWrite(13, LOW);			//Sonar POWER OFF
-					iniLocSonar->_sonarDistance = iniLocSonar->_getDistance(iniLocSonar->_sonarRaw);
+					iniLocSonar->_sonarDistance = distAvg->Get();
 					iniLocSonar->done = true;
 					iniLocSonar->enable = false;
 					iniLocSonar->siniLocMQTT->hantar("Sonar", String(iniLocSonar->_sonarDistance));
 					iniLocSonar->siniLocOLED->sonarDistance = iniLocSonar->_sonarDistance;
-
+					iniLocSonar->_sonarRaw = "";
 				}
 
+				distance  = 0;
 				delay(10);
-
-
 			}
 		}
-
-
-
-
 		delay(10);
 	}
 }
 
 
 
-boolean isNumeric(String str)
-{
-    unsigned int stringLength = str.length();
-    boolean seenDecimal = false;
 
-
-//    log_i("panjang = %d", stringLength);
-
-    if (stringLength == 0) {
-        return false;
-    }
-
-    for(unsigned int i = 0; i < stringLength; ++i) {
-        if (isDigit(str.charAt(i))) {
-            continue;
-        }
-
-        if (str.charAt(i) == '.') {
-            if (seenDecimal) {
-                return false;
-            }
-            seenDecimal = true;
-            continue;
-        }
-        return false;
-    }
-    return true;
-}
 
 
 float LocSonar::_getDistance(String str)
@@ -107,9 +128,6 @@ float LocSonar::_getDistance(String str)
 			end = str.indexOf("R",pos);
 			if(end != -1){
 //				pos = end+1;
-
-
-
 
 				Temp = str.substring(start+1,end);
 				Temp.trim();
@@ -142,6 +160,8 @@ float LocSonar::_getDistance(String str)
 			break;
 		}
 	}
+
+	log_i("Jumlah bacaan %d", index);
 
 	double sum=0, mean=0;
 	int i, below=0, above=0;
@@ -305,4 +325,71 @@ void LocSonar::PortSonar(bool select) {
 //	}
 //	return jumlah;
 //}
+
+
+
+
+//while(true){
+//	if(iniLocSonar->enable){
+//		while(Serial.available() > 0){
+//			cr = Serial.read();
+//			if(cr == 'R'){
+//				RFound ++;
+//			}
+//
+//			if(cr >= 32 && cr <= 126 ){			//printable char only
+//				iniLocSonar->_sonarRaw.concat(cr);
+//			}
+//
+//			if(RFound < 5){
+//				iniLocSonar->_sonarRaw = "";
+//			}
+//
+//			if(RFound > 36 && !iniLocSonar->done){
+//				RFound = 0;
+//				digitalWrite(13, LOW);			//Sonar POWER OFF
+//				iniLocSonar->_sonarDistance = iniLocSonar->_getDistance(iniLocSonar->_sonarRaw);
+//				iniLocSonar->done = true;
+//				iniLocSonar->enable = false;
+//				iniLocSonar->siniLocMQTT->hantar("Sonar", String(iniLocSonar->_sonarDistance));
+//				iniLocSonar->siniLocOLED->sonarDistance = iniLocSonar->_sonarDistance;
+//				iniLocSonar->_sonarRaw = "";
+//			}
+//			delay(10);
+//		}
+//	}
+//	delay(10);
+//}
+
+
+
+boolean isNumeric(String str)
+{
+    unsigned int stringLength = str.length();
+    boolean seenDecimal = false;
+
+
+//    log_i("panjang = %d", stringLength);
+
+    if (stringLength == 0) {
+        return false;
+    }
+
+    for(unsigned int i = 0; i < stringLength; ++i) {
+        if (isDigit(str.charAt(i))) {
+            continue;
+        }
+
+        if (str.charAt(i) == '.') {
+            if (seenDecimal) {
+                return false;
+            }
+            seenDecimal = true;
+            continue;
+        }
+        return false;
+    }
+    return true;
+}
+
 

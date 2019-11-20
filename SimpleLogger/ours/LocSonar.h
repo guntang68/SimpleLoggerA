@@ -19,6 +19,8 @@ private:
 	String 	_sonarRaw;
 	float 	_getDistance(String str);
 	double 	_sonarDistance;
+
+	int _getNumber();
 public:
 	LocSonar(int core);
 	void PortSonar(bool select);

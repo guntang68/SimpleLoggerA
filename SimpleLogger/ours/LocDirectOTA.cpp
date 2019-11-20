@@ -39,7 +39,6 @@ LocDirectOTA::LocDirectOTA(int core, int loopDelay, int *lookVal)
 }
 
 void LocDirectOTA::loop(void* parameter) {
-	log_i("require init");
 	while(true){
 		if((WiFi.getMode() == WIFI_MODE_AP) || (WiFi.getMode() == WIFI_MODE_APSTA)){
 			if( !WiFi.softAPIP().toString().equals("0.0.0.0")){
@@ -49,8 +48,6 @@ void LocDirectOTA::loop(void* parameter) {
 		log_i("NO AP");
 		delay(iniDirectOTA->_loopDelay);
 	}
-
-	log_i("Local softAPIP = %s", WiFi.softAPIP().toString().c_str());
 
 	MDNS.begin("nine");
 	server.on("/stat", WebServer::THandlerFunction(iniDirectOTA->_StatusViaWiFi));
