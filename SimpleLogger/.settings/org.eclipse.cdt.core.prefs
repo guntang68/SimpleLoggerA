@@ -43,7 +43,7 @@ environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.FLASH_S
 environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.FLASH_SIZE/value=4MB
 environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.F_CPU/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.F_CPU/operation=replace
-environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.F_CPU/value=240000000L
+environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.F_CPU/value=80000000L
 environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.MCU/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.MCU/operation=replace
 environment/project/io.sloeber.core.toolChain.release.2103956691/A.BUILD.MCU/value=esp32
@@ -403,7 +403,7 @@ environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.COM_PORT
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.COM_PORT/value=/dev/ttyUSB0
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.ECLIPSE_LOCATION/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.ECLIPSE_LOCATION/operation=replace
-environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.ECLIPSE_LOCATION/value=${eclipse_home}
+environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.ECLIPSE_LOCATION/value=${eclipse_home}/////
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.EXTRA.ALL/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.EXTRA.ALL/operation=replace
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.EXTRA.ALL/value=
@@ -427,7 +427,7 @@ environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.EXTRA.LI
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.EXTRA.LINK/value=
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.MENU/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.MENU/operation=replace
-environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.MENU/value=CPUFreq\=240\nDebugLevel\=info\nFlashFreq\=80\nFlashMode\=dio\nFlashSize\=4M\nPartitionScheme\=default\nPSRAM\=disabled\nUploadSpeed\=921600
+environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.MENU/value=CPUFreq\=80\nDebugLevel\=info\nFlashFreq\=80\nFlashMode\=dio\nFlashSize\=4M\nPartitionScheme\=default\nPSRAM\=disabled\nUploadSpeed\=921600
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.OBJCOPY/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.OBJCOPY/operation=replace
 environment/project/io.sloeber.core.toolChain.release.2103956691/JANTJE.OBJCOPY/value=${A.RECIPE.OBJCOPY.EEP.PATTERN}\n\t${A.RECIPE.OBJCOPY.HEX.PATTERN}

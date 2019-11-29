@@ -16,6 +16,7 @@
 #include "images.h"
 #include <WiFi.h>
 
+
 //OLED Display pin
 #define pOutDRes 25
 #define pOutDDC 26
@@ -30,6 +31,13 @@ const int clockRadius = 23;
 
 const int spacing = 12;
 
+typedef struct{
+	double bp;
+	double at;
+	double ws;
+	double wd;
+} airmarReading_t;
+
 
 class LocOLED {
 public:
@@ -37,6 +45,8 @@ public:
 	static void loop(void * parameter);
 	void setProgress(double value);
 	double sonarDistance;
+	std::vector<airmarReading_t> readingList;
+	airmarReading_t reading;
 
 };
 

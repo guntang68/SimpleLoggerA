@@ -12,13 +12,14 @@ TaskHandle_t 	loopLocAirmar= NULL;
 
 //double BP=0, AT=0, WS=0, WD=0;
 
-std::vector<airmarReading_t> readingList;
-airmarReading_t reading;
+
 
 LocAirmar::LocAirmar(int core) {
 
 	iniLocAirmar = this;
 	iniLocAirmar->_airmarRaw = "";
+
+	iniLocAirmar->siniLocOLED = NULL;
 
 	pinMode(12, OUTPUT);
 	digitalWrite(12, HIGH);			//Airmar POWER
@@ -27,51 +28,51 @@ LocAirmar::LocAirmar(int core) {
 }
 
 void LocAirmar::_processAirmarData() {
-//	int x;
-//	String header="";
-//
-//	ManNMEA *manNmea;
-//
-//	x = iniLocAirmar->_airmarRaw.indexOf('*', 0);
-//	if(x >= 0){
-//		String cs = iniLocAirmar->_airmarRaw.substring(x+1,x+3);
-//		int y = iniLocAirmar->_airmarRaw.lastIndexOf('!',x);
-//		int z = iniLocAirmar->_airmarRaw.lastIndexOf('$',x);
-//
-//		if((y>=0) || (z>=0)){
-//			if(z > y) y = z;
-//			String word = iniLocAirmar->_airmarRaw.substring(y, x+3);
-//
-//
-//			manNmea = new ManNMEA;
-//			if(manNmea->ValidCheckSum(iniLocAirmar->_airmarRaw)){
-//				header = manNmea->extractCol(iniLocAirmar->_airmarRaw, 0).substring(1);
-//
-//				if(header == "WIMDA"){
+	int x;
+	String header="";
+
+	ManNMEA *manNmea;
+
+	x = iniLocAirmar->_airmarRaw.indexOf('*', 0);
+	if(x >= 0){
+		String cs = iniLocAirmar->_airmarRaw.substring(x+1,x+3);
+		int y = iniLocAirmar->_airmarRaw.lastIndexOf('!',x);
+		int z = iniLocAirmar->_airmarRaw.lastIndexOf('$',x);
+
+		if((y>=0) || (z>=0)){
+			if(z > y) y = z;
+			String word = iniLocAirmar->_airmarRaw.substring(y, x+3);
+
+
+			manNmea = new ManNMEA;
+			if(manNmea->ValidCheckSum(iniLocAirmar->_airmarRaw)){
+				header = manNmea->extractCol(iniLocAirmar->_airmarRaw, 0).substring(1);
+
+				if(header == "WIMDA"){
 //					BP = manNmea->extractCol(iniLocAirmar->_airmarRaw,3).toDouble() * 1000;
 //					AT = manNmea->extractCol(iniLocAirmar->_airmarRaw, 5).toDouble();
-//					reading.bp = BP;
-//					reading.at = AT;
-//				}
-//				else if(header == "WIMWV"){
+					iniLocAirmar->reading.bp = manNmea->extractCol(iniLocAirmar->_airmarRaw,3).toDouble() * 1000;
+					iniLocAirmar->reading.at = manNmea->extractCol(iniLocAirmar->_airmarRaw, 5).toDouble();
+				}
+				else if(header == "WIMWV"){
 //					WS = manNmea->extractCol(iniLocAirmar->_airmarRaw,3).toDouble();
 //					WD = manNmea->extractCol(iniLocAirmar->_airmarRaw, 1).toDouble();
-//					reading.ws = WS;
-//					reading.wd = WD;
-//				}
-//				else if(header == "TIROT"){
-////					hantu(String(BP) + "\t" + String(AT) + "\t" + String(WS) + "\t" + String(WD) );
-//					if(readingList.size() > 60){
-//						readingList.erase(readingList.begin());
-//					}
-//					readingList.push_back(reading);
-//				}
-//
-//			}
-//			manNmea->~ManNMEA();
-//			delete manNmea;
-//		}
-//	}
+					iniLocAirmar->reading.ws = manNmea->extractCol(iniLocAirmar->_airmarRaw,3).toDouble();
+					iniLocAirmar->reading.wd = manNmea->extractCol(iniLocAirmar->_airmarRaw, 1).toDouble();
+				}
+				else if(header == "TIROT"){
+//					hantu(String(BP) + "\t" + String(AT) + "\t" + String(WS) + "\t" + String(WD) );
+					if(iniLocAirmar->readingList.size() > 60){
+						iniLocAirmar->readingList.erase(iniLocAirmar->readingList.begin());
+					}
+					iniLocAirmar->readingList.push_back(iniLocAirmar->reading);
+				}
+
+			}
+			manNmea->~ManNMEA();
+			delete manNmea;
+		}
+	}
 }
 
 void LocAirmar::loop(void* parameter) {
@@ -93,9 +94,12 @@ void LocAirmar::loop(void* parameter) {
 
 				iniLocAirmar->_airmarRaw.trim();
 
-
+				iniLocAirmar->_processAirmarData();
 //				processAirmarData();
 //				log_i("%s", iniLocAirmar->_airmarRaw.c_str());
+
+				iniLocAirmar->siniLocOLED->reading = iniLocAirmar->reading;
+				iniLocAirmar->siniLocOLED->readingList = iniLocAirmar->readingList;
 
 				iniLocAirmar->_airmarRaw = "";
 			}

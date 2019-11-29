@@ -307,41 +307,49 @@ void LocOLED::setProgress(double value) {
 
 inline void aGraph(OLEDDisplay* display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-		display->setTextAlignment(TEXT_ALIGN_LEFT);
-		display->setFont(ArialMT_Plain_10);
+	double maxws=0, wdws=0;
 
-		display->drawRect(0, 13, 62, 40);
 
-//		int xp=0, yp=0, yt=0;
+	display->setTextAlignment(TEXT_ALIGN_LEFT);
+	display->setFont(ArialMT_Plain_10);
 
-//		if(readingList.size()>0){
-//			airmarReading_t v = readingList.at(0);
-//			yp = 60 - (v.ws*2 +15);
-//
-//			for(int x = 1; x< readingList.size(); x++){
-//				v = readingList.at(x);
-//
-//				yt = 60 - (v.ws*2 +15);
-//				if(yt < 5) yt = 5;
-//
-//				display->drawLine(xp, yp, x,yt);
-//				xp = x;
-//				yp = yt;
-//			}
-//
-//		}
+	display->drawRect(0, 13, 62, 40);
 
-		display->drawString(72 , 50, String(iniLocOLED->sonarDistance,0) + "mm");
-		display->drawCircle(94, 25, 13);
+	int xp=0, yp=0, yt=0;
 
-		double rad = WD*3.14/180;
-		double dX = 15 * sin(rad);
-		double dY = 15 * cos(rad) * -1;
+	if(iniLocOLED->readingList.size()>0){
+		airmarReading_t v = iniLocOLED->readingList.at(0);
 
-		display->drawLine(94, 25, 94+dX, 25+dY);
+		yp = 60 - (v.ws*2 +15);
 
-		String timenow = makeTwoDigits(hour())+":"+makeTwoDigits(minute())+":"+makeTwoDigits(second());
-		display->drawString(0 , 0, timenow );
+		for(int x = 1; x< iniLocOLED->readingList.size(); x++){
+			v = iniLocOLED->readingList.at(x);
 
-		displayIcons(display);
+			if(v.ws > maxws){
+				maxws = v.ws;
+				wdws = v.wd;
+			}
+
+			yt = 60 - (v.ws*2 +15);
+			if(yt < 5) yt = 5;
+
+			display->drawLine(xp, yp, x,yt);
+			xp = x;
+			yp = yt;
+		}
+	}
+
+	display->drawString(72 , 50, String(iniLocOLED->sonarDistance,0) + "mm");
+	display->drawCircle(94, 25, 13);
+
+	double rad = wdws*3.14/180;
+	double dX = 15 * sin(rad);
+	double dY = 15 * cos(rad) * -1;
+
+	display->drawLine(94, 25, 94+dX, 25+dY);
+
+	String timenow = makeTwoDigits(hour())+":"+makeTwoDigits(minute())+":"+makeTwoDigits(second());
+	display->drawString(0 , 0, timenow );
+
+	displayIcons(display);
 }

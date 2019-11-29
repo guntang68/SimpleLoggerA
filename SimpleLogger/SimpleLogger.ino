@@ -8,6 +8,8 @@
 #include <LocMando.h>
 #include <LocSonar.h>
 #include <LocAirmar.h>
+//#include <digitalize.h>
+//#include <graph.h>
 
 
 
@@ -69,19 +71,9 @@ void setup()
 	jDoc["3"] = "tiga";
 
 
-
-
 	serializeJsonPretty(jDoc, katun);
 
-
-
-//	while(true){
-//		delay(100);
-//	}
 	//============================================================================================
-
-
-
 
 
 	_setupSPIFFiles(false);	//if true -> delete all files & create default file
@@ -101,20 +93,18 @@ void setup()
 	locDirectOTA = new LocDirectOTA(0,10, &gValDirectOTA);
 	locOLED = new LocOLED(0);
 	locMando = new LocMando(0);
-	locSonar = new LocSonar(0);
+	locSonar = new LocSonar(0, 10000, 500);
 	locAirmar = new LocAirmar(0);
 
 	locDirectOTA->siniLocMando = locMando;
 	locMando->siniLocMQTT = locMqtt;
 	locSonar->siniLocMQTT = locMqtt;
 	locSonar->siniLocOLED = locOLED;
+	locAirmar->siniLocOLED = locOLED;
 
 
 
 	locMando->PortMando(true);
-
-
-
 }
 
 //=================================================================================================
@@ -125,14 +115,6 @@ void loop()
 {
 	delay(1000);
 	cnt++;
-//	if(cnt == 15){
-//		locMqtt->hantar("mando", "kasi enable");
-//		locMando->PortMando(true);
-//	}
-//	if(cnt == 30){
-//		gValWiFi = lw_wifi_apsta;
-//	}
-
 
 	if((!WiFi.isConnected()) & (cnt > 15)){
 		cnt = 0;
@@ -144,8 +126,6 @@ void loop()
 	if((cnt % 20) == 0){
 		locMando->PortMando(false);
 		locSonar->PortSonar(true);
-
-
 		locMqtt->hantar("jsondata", katun);
 	}
 

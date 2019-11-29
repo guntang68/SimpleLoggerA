@@ -12,6 +12,8 @@
 #include <LocMQTT.h>
 #include <LocOLED.h>
 #include <pins.h>
+#include <digitalize.h>
+#include <graph.h>
 
 class LocSonar {
 private:
@@ -20,9 +22,12 @@ private:
 	float 	_getDistance(String str);
 	double 	_sonarDistance;
 
+	digitalize 		*digiSonar;
+	graph			*graphSonar;
+
 	int _getNumber();
 public:
-	LocSonar(int core);
+	LocSonar(int core, double Max, double Min);
 	void PortSonar(bool select);
 	static void loop(void * parameter);
 	LocMQTT *siniLocMQTT;
