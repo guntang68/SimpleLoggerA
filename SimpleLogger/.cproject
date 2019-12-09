@@ -35,6 +35,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/Wire/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/ESP8266_and_ESP32_Oled_Driver_for_SSD1306_display/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/SPI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/SD/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.49708997" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -56,6 +57,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/Wire/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/ESP8266_and_ESP32_Oled_Driver_for_SSD1306_display/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/SPI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/SD/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.844780567" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -77,6 +79,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/Wire/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/ESP8266_and_ESP32_Oled_Driver_for_SSD1306_display/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/SPI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SimpleLogger/libraries/SD/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.303412227" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>

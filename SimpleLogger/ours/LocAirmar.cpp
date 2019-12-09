@@ -21,6 +21,12 @@ LocAirmar::LocAirmar(int core) {
 
 	iniLocAirmar->siniLocOLED = NULL;
 
+	iniLocAirmar->_processed.at = 0;
+	iniLocAirmar->_processed.bp = 0;
+	iniLocAirmar->_processed.wd = 0;
+	iniLocAirmar->_processed.ws = 0;
+
+
 	pinMode(12, OUTPUT);
 	digitalWrite(12, HIGH);			//Airmar POWER
 
@@ -95,8 +101,6 @@ void LocAirmar::loop(void* parameter) {
 				iniLocAirmar->_airmarRaw.trim();
 
 				iniLocAirmar->_processAirmarData();
-//				processAirmarData();
-//				log_i("%s", iniLocAirmar->_airmarRaw.c_str());
 
 				iniLocAirmar->siniLocOLED->reading = iniLocAirmar->reading;
 				iniLocAirmar->siniLocOLED->readingList = iniLocAirmar->readingList;
@@ -111,3 +115,20 @@ void LocAirmar::loop(void* parameter) {
 		delay(10);
 	}
 }
+
+airmarReading_t LocAirmar::GetReading() {
+	airmarReading_t v;
+
+	for(int i=0; i < iniLocAirmar->readingList.size(); i++){
+		v = iniLocAirmar->readingList.at(i);
+		if(v.ws > iniLocAirmar->_processed.ws){
+			iniLocAirmar->_processed.ws = v.ws;
+			iniLocAirmar->_processed.wd = v.wd;
+			iniLocAirmar->_processed.at = v.at;
+			iniLocAirmar->_processed.bp = v.bp;
+		}
+	}
+
+	return iniLocAirmar->_processed;
+}
+

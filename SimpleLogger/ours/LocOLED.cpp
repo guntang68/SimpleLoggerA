@@ -13,6 +13,8 @@ TaskHandle_t 	loopLocOLED= NULL;
 bool MandoWake = false;
 bool mandoMissing = false;
 
+
+
 String PlainType1Text="PlainType1Text";
 String PlainType2Text="PlainType2Text";
 double dProgress=0;
@@ -44,6 +46,8 @@ int8_t currentSet=0;
 int8_t newSet=0;
 int frameCount = 3;
 
+bool enUpdate=true;
+
 FrameCallback frames1[] = {aTitle, aPlainType1, aPlainType2};
 FrameCallback frames2[] = {aMeteorological};
 FrameCallback frames3[] = {aProgress};
@@ -51,6 +55,8 @@ FrameCallback frames4[] = {aTitle, aGraph};
 
 LocOLED::LocOLED(int core) {
 	iniLocOLED = this;
+
+	iniLocOLED->_pause = false;
 
 	ui = &display;
 
@@ -76,72 +82,106 @@ LocOLED::LocOLED(int core) {
 
 }
 
+bool LocOLED::done() {
+
+	return freshDone;
+}
+
+
+void LocOLED::pause(bool pause) {
+	iniLocOLED->_pause = pause;
+	log_i("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< %d", pause);
+	if(pause == false){
+		enUpdate = true;
+	}
+}
+
 void LocOLED::loop(void* parameter) {
+	int remainingTimeBudget;
 	ui.disableAllIndicators();
 
+
+
+	pinMode(2, OUTPUT);
+
 	while(1){
-
-//		if(serial1Rx){
-//			serial1Rx = false;
-//			lastRx = millis();
-//			mandoMissing = false;
-//
-//		}
-//		if((millis() - lastRx) > 12000){
-//			mandoMissing = true;
-//		}
-
-
-		if(frameScroll){
-			int remainingTimeBudget = ui.update();
+		if(enUpdate){
+			remainingTimeBudget = ui.update();
 			if(remainingTimeBudget > 0){
 				delay(remainingTimeBudget);
 			}
 
 			if(ui.getUiState()->frameState == IN_TRANSITION){
+
 				freshDone = false;
+
+				if(!frameScroll){
+					frameScroll = true;
+					digitalWrite(2, HIGH);
+				}
 
 			}
 			else{
-				if(currentSet != newSet){
-					currentSet = newSet;
 
-					switch (currentSet) {
-						case 1:
-							frameCount = 3;
-							ui.setFrames(frames1, frameCount);
-							break;
-						case 2:
-							frameCount = 1;
-							ui.setFrames(frames2, frameCount);
-							ui.disableAutoTransition();
-							break;
-						case 3:
-							frameCount = 1;
-							ui.setFrames(frames3, frameCount);
-							ui.disableAutoTransition();
-							break;
-						case 4:
 
-//							hantu("SINI");
-//
-//							frameCount = 2;
-//							ui.setFrames(frames4, frameCount);
-
-//							ui.disableAutoTransition();
-							break;
-						default:
-							break;
+				if(frameScroll){
+					frameScroll = false;
+					digitalWrite(2, LOW);
+					if(iniLocOLED->_pause){
+						iniLocOLED->_pause = false;
+						log_i(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
+						enUpdate = false;
+						freshDone = true;
 					}
+				}
+
+
+
+			}
+
+
+			if(currentSet != newSet){
+				currentSet = newSet;
+				switch (currentSet) {
+					case 1:
+						frameCount = 3;
+						ui.setFrames(frames1, frameCount);
+						break;
+					case 2:
+						frameCount = 1;
+						ui.setFrames(frames2, frameCount);
+						ui.disableAutoTransition();
+						break;
+					case 3:
+						frameCount = 1;
+						ui.setFrames(frames3, frameCount);
+						ui.disableAutoTransition();
+						break;
+					case 4:
+						log_i("SINI");
+						frameCount = 2;
+						ui.setFrames(frames4, frameCount);
+						ui.disableAutoTransition();
+						break;
+					default:
+						break;
 				}
 			}
 		}
 
-
-
-		delay(1);
+		delay(10);
 	}
 }
+
+
+
+//		if(iniLocOLED->_pause == false){
+//			enUpdate = true;
+//			freshDone = true;
+////			digitalWrite(pOutDCS, LOW);
+//		}
+
+
 
 
 inline void displayIcons(OLEDDisplay* display) {
@@ -339,6 +379,8 @@ inline void aGraph(OLEDDisplay* display, OLEDDisplayUiState* state, int16_t x, i
 		}
 	}
 
+
+
 	display->drawString(72 , 50, String(iniLocOLED->sonarDistance,0) + "mm");
 	display->drawCircle(94, 25, 13);
 
@@ -353,3 +395,14 @@ inline void aGraph(OLEDDisplay* display, OLEDDisplayUiState* state, int16_t x, i
 
 	displayIcons(display);
 }
+
+
+
+
+//
+//						case 4:
+////							hantu("SINI");
+////							frameCount = 2;
+////							ui.setFrames(frames4, frameCount);
+////							ui.disableAutoTransition();
+//							break;

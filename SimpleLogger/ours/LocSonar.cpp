@@ -6,26 +6,18 @@
  */
 
 #include <LocSonar.h>
-//#include <UtilRollAverage.h>
-
-
 
 LocSonar		*iniLocSonar;
 TaskHandle_t 	loopLocSonar= NULL;
 
-
 timer_t sonarReadTime=0;
-
 boolean isNumeric(String str);
-
-//UtilRollAverage *distAvg;
-//UtilRollAverage *distAvgSlow;
-//UtilRollAverage *distAvgFast;
 
 void LocSonar::loop(void* parameter) {
 	char cr;
 	int RFound=0;
 	double distance=0;
+	timer_t start=0;
 
 	unsigned char tempChar;
 
@@ -52,22 +44,24 @@ void LocSonar::loop(void* parameter) {
 					RFound = 0;
 					digitalWrite(13, LOW);			//Sonar POWER OFF
 
-
 					graph_t ddd = iniLocSonar->graphSonar->transferToHisto();
 
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
-					iniLocSonar->graphSonar->typeIt();
-					log_i("hh");
-					log_i("hh");
-					log_i("hh");
-					log_i("%d %d %f", ddd.Max, ddd.Point, iniLocSonar->digiSonar->toDouble(ddd.Point));
-#endif
-
-//					iniLocSonar->_sonarDistance = distAvg->Get();
 					iniLocSonar->_sonarDistance = iniLocSonar->digiSonar->toDouble(ddd.Point);
 					iniLocSonar->done = true;
 					iniLocSonar->enable = false;
-					iniLocSonar->siniLocMQTT->hantar("Sonar", String(iniLocSonar->_sonarDistance));
+					iniLocSonar->siniLocOLED->sonarDistance = iniLocSonar->_sonarDistance;
+					iniLocSonar->_sonarRaw = "";
+				}
+
+				if((millis()-start)>10000){
+					RFound = 0;
+					digitalWrite(13, LOW);			//Sonar POWER OFF
+
+					graph_t ddd = iniLocSonar->graphSonar->transferToHisto();
+
+					iniLocSonar->_sonarDistance = iniLocSonar->digiSonar->toDouble(ddd.Point);
+					iniLocSonar->done = true;
+					iniLocSonar->enable = false;
 					iniLocSonar->siniLocOLED->sonarDistance = iniLocSonar->_sonarDistance;
 					iniLocSonar->_sonarRaw = "";
 				}
@@ -75,6 +69,10 @@ void LocSonar::loop(void* parameter) {
 				distance  = 0;
 				delay(10);
 			}
+		}
+		else{
+			start = millis();
+
 		}
 		delay(10);
 	}
@@ -121,7 +119,6 @@ void LocSonar::PortSonar(bool select) {
 	else{
 		digitalWrite(13, LOW);			//Sonar POWER on masa nak baca sahaja
 	}
-
 }
 
 boolean isNumeric(String str)
@@ -153,7 +150,6 @@ boolean isNumeric(String str)
     return true;
 }
 
-
 int LocSonar::_getNumber() {
 	int start=0, end=0, pos = 0, tempNum = 0;
 	String Temp = "";
@@ -182,3 +178,18 @@ int LocSonar::_getNumber() {
 
 	return tempNum;
 }
+
+double LocSonar::GetDistance() {
+	return iniLocSonar->_sonarDistance;
+}
+
+
+
+
+//#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+////					iniLocSonar->graphSonar->typeIt();
+////					log_i("hh");
+////					log_i("hh");
+////					log_i("hh");
+////					log_i("%d %d %f", ddd.Max, ddd.Point, iniLocSonar->digiSonar->toDouble(ddd.Point));
+//#endif

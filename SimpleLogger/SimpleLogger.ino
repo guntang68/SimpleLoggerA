@@ -8,12 +8,12 @@
 #include <LocMando.h>
 #include <LocSonar.h>
 #include <LocAirmar.h>
+#include <Ticker.h>
 //#include <digitalize.h>
 //#include <graph.h>
 
-
-
-//TODO	need to detect WiFi lost connection
+#include <SPI.h>
+#include <SD.h>
 
 LocWiFi			*locWiFi;
 LocMQTT			*locMqtt;
@@ -23,6 +23,10 @@ LocMando		*locMando;
 LocSonar		*locSonar;
 LocAirmar		*locAirmar;
 
+Ticker	*tickWiFi;
+Ticker	*tickNyamuk;
+Ticker	*tickSonar;
+
 int gValWiFi = lw_wifi_off;
 int gValDirectOTA = 0;
 String gMAC = "";
@@ -30,14 +34,46 @@ String gMAC = "";
 void _setupSPIFFiles(bool format);
 
 // for MQTT
-void _tickNyamuk();
+//void _tickNyamuk();
 time_t gtickNyamukTime = 0;
 bool gtockBeat;
 bool gmqttEnabled=true;
 
+timer_t gTimer1 =0;
+bool tick1 = false;
+
 
 DynamicJsonDocument jDoc(4000);
 String katun="";
+
+
+File root;
+
+
+
+void printDirectory(File dir, int numTabs) {
+  while (true) {
+
+    File entry =  dir.openNextFile();
+    if (! entry) {
+      // no more files
+      break;
+    }
+    for (uint8_t i = 0; i < numTabs; i++) {
+      Serial.print('\t');
+    }
+    Serial.print(entry.name());
+    if (entry.isDirectory()) {
+      Serial.println("/");
+      printDirectory(entry, numTabs + 1);
+    } else {
+      // files have sizes, directories do not
+      Serial.print("\t\t");
+      Serial.println(entry.size(), DEC);
+    }
+    entry.close();
+  }
+}
 
 //=================================================================================================
 void setup()
@@ -65,13 +101,43 @@ void setup()
 	//============================================================================================
 
 
+//	Serial.print("Initializing SD card...");
+//
+//	if (!SD.begin(32)) {
+//		Serial.println("initialization failed!");
+//		while (1);
+//	}
+//	Serial.println("initialization done.");
+//
+//	root = SD.open("/");
+//
+//	printDirectory(root, 0);
+//
+//	Serial.println("done!");
+//
+//
+//
+//	// re-open the file for reading:
+////	File myFile = SD.open("/config.txt");
+////	if (myFile) {
+////		while (myFile.available()) {
+////		Serial.write(myFile.read());
+////		}
+////		myFile.close();
+////	} else {
+////
+////	Serial.println("error opening test.txt");
+////	}
+//
+//	SD.end();
 
-	jDoc["1"] = "satu"; // XF7TDK
-	jDoc["2"] = "xxxxxxxxxxxxxxxxxxxxx";
-	jDoc["3"] = "tiga";
 
+	//--------------------------------------------------------------------------------------------
 
-	serializeJsonPretty(jDoc, katun);
+//	while(true){
+//		delay(1000);
+//	}
+
 
 	//============================================================================================
 
@@ -102,9 +168,15 @@ void setup()
 	locSonar->siniLocOLED = locOLED;
 	locAirmar->siniLocOLED = locOLED;
 
-
-
 	locMando->PortMando(true);
+
+
+	tickWiFi = new Ticker(15000, 0);
+	tickNyamuk = new Ticker(60000, 0);
+	tickSonar = new Ticker(20000,0);
+
+
+	gTimer1 = millis();
 }
 
 //=================================================================================================
@@ -113,40 +185,118 @@ int cnt=0;
 
 void loop()
 {
-	delay(1000);
-	cnt++;
+	locMqtt->update();
 
-	if((!WiFi.isConnected()) & (cnt > 15)){
-		cnt = 0;
-		log_w("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww??????");
+	tickWiFi->Update();
+	if(tickWiFi->set & !WiFi.isConnected()){
+		tickWiFi->Reset();
 		gValWiFi = lw_wifi_apsta;
-
 	}
 
-	if((cnt % 20) == 0){
+	if(tickNyamuk->Update()){
+		gtockBeat = !gtockBeat;
+		locMqtt->hantar(gMAC, gtockBeat?"1":"0");
+	}
+
+	if(tickSonar->Update()){
 		locMando->PortMando(false);
 		locSonar->PortSonar(true);
-		locMqtt->hantar("jsondata", katun);
 	}
 
 	if(locSonar->done){
 		locSonar->PortSonar(false);
 		locMando->PortMando(true);
-	}
 
-	_tickNyamuk();
+		airmarReading_t r = locAirmar->GetReading();
+		jDoc.clear();
+		jDoc["ts"] = now();
+		jDoc["ws"] = r.ws;
+		jDoc["wd"] = r.wd;
+		jDoc["at"] = r.at;
+		jDoc["bp"] = r.bp;
+		jDoc["wl"] = locSonar->GetDistance();
+
+		katun = "";
+		serializeJsonPretty(jDoc, katun);
+
+		locMqtt->hantar("tick data", katun);
+
+		locOLED->pause(true);
+		while(!locOLED->done()){
+			delay(10);
+		}
+
+		if (SD.begin(32)) {
+			log_i("sini a");
+			File dataFile = SD.open("/datalog.txt", FILE_APPEND);
+			log_i("sini b");
+
+			// if the file is available, write to it:
+			if (dataFile) {
+				dataFile.println(katun);
+				Serial.println(dataFile.size());
+				dataFile.close();
+				// print to the serial port too:
+	//			Serial.println(katun);
+			}
+			// if the file isn't open, pop up an error:
+			else {
+				Serial.println("error opening datalog.txt");
+			}
+
+			SD.end();
+		}
+
+		locOLED->pause(false);
+
+
+
+//		delay(200);
+//
+//		locOLED->pause(true);
+//		log_i("sini A");
+//		while(!locOLED->done()){
+//			delay(10);
+//		}
+//
+//		delay(200);
+//
+//		if (SD.begin(32)) {
+//			log_i("sini a");
+//
+//
+//
+//			File dataFile = SD.open("/datalog.txt", FILE_APPEND);
+//			log_i("sini b");
+//
+//			// if the file is available, write to it:
+//			if (dataFile) {
+//				dataFile.println(katun);
+//				Serial.println(dataFile.size());
+//				dataFile.close();
+//				// print to the serial port too:
+//	//			Serial.println(katun);
+//			}
+//			// if the file isn't open, pop up an error:
+//			else {
+//				Serial.println("error opening datalog.txt");
+//			}
+//
+//
+//
+//			SD.end();
+//
+//			digitalWrite(32, HIGH);
+//
+//			delay(1000);
+//
+//		}
+//
+//		locOLED->pause(false);
+	}
 }
 
-//=================================================================================================
-inline void _tickNyamuk() {
-	locMqtt->update();
-	if((millis()-gtickNyamukTime) > 60000){
-		gtickNyamukTime = millis();
-		gtockBeat = !gtockBeat;
-		locMqtt->hantar(gMAC, gtockBeat?"1":"0");
-//		log_i("beat ---------------------------------> %s", gMAC.c_str());
-	}
-}
+
 //=================================================================================================
 inline void _setupSPIFFiles(bool format) {
 	LocSpiff 	*locSpiff;
@@ -183,3 +333,22 @@ inline void _setupSPIFFiles(bool format) {
 		}
 	}
 }
+
+
+
+
+
+
+//// re-open the file for reading:
+//File myFile = SD.open("/datalog.txt");
+//if (myFile) {
+////				while (myFile.available()) {
+////					Serial.write(myFile.read());
+////				}
+//
+//	Serial.println(myFile.size());
+//	myFile.close();
+//}
+//else {
+//	Serial.println("error opening datalog.txt");
+//}

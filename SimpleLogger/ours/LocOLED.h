@@ -40,11 +40,15 @@ typedef struct{
 
 
 class LocOLED {
+private:
+	bool _pause;
 public:
 	LocOLED(int core);
 	static void loop(void * parameter);
 	void setProgress(double value);
 	double sonarDistance;
+	bool done();
+	void pause(bool pause);
 	std::vector<airmarReading_t> readingList;
 	airmarReading_t reading;
 

@@ -32,6 +32,7 @@ public:
 	static void loop(void * parameter);
 	LocMQTT *siniLocMQTT;
 	LocOLED *siniLocOLED;
+	double GetDistance();
 	bool done;
 
 };

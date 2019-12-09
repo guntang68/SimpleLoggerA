@@ -27,9 +27,11 @@ private:
 	void _processAirmarData();
 	std::vector<airmarReading_t> readingList;
 	airmarReading_t reading;
+	airmarReading_t _processed;
 public:
 	LocAirmar(int core);
 	static void loop(void* parameter);
+	airmarReading_t GetReading();
 	LocOLED *siniLocOLED;
 };
 
