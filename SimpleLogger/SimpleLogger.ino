@@ -9,6 +9,8 @@
 #include <LocSonar.h>
 #include <LocAirmar.h>
 #include <Ticker.h>
+#include <LocOTA.h>
+
 //#include <digitalize.h>
 //#include <graph.h>
 
@@ -22,6 +24,7 @@ LocOLED			*locOLED;
 LocMando		*locMando;
 LocSonar		*locSonar;
 LocAirmar		*locAirmar;
+LocOTA			*locOTA;
 
 Ticker	*tickWiFi;
 Ticker	*tickNyamuk;
@@ -43,8 +46,8 @@ timer_t gTimer1 =0;
 bool tick1 = false;
 
 
-DynamicJsonDocument jDoc(4000);
-String katun="";
+
+//String katun="";
 
 
 File root;
@@ -158,6 +161,7 @@ void setup()
 
 	locDirectOTA = new LocDirectOTA(0,10, &gValDirectOTA);
 	locOLED = new LocOLED(0);
+	locOLED->setDisplay(4);
 	locMando = new LocMando(0);
 	locSonar = new LocSonar(0, 10000, 500);
 	locAirmar = new LocAirmar(0);
@@ -176,12 +180,23 @@ void setup()
 	tickSonar = new Ticker(20000,0);
 
 
+	locOTA = new LocOTA(__FILE__, 1);
+
+
 	gTimer1 = millis();
 }
 
 //=================================================================================================
 
 int cnt=0;
+size_t pProg=0;
+double pPersent=0;
+size_t pSize=0;
+size_t pTemp;
+
+size_t tSize=0;
+
+double sdSize=0;
 
 void loop()
 {
@@ -203,23 +218,61 @@ void loop()
 		locSonar->PortSonar(true);
 	}
 
+	switch (locOTA->Status) {
+		case ota_start:
+			locOLED->setDisplay(3);
+			log_i("************************************************************");
+			pProg=0;
+			pSize = 0;
+			break;
+		case ota_update_ok:
+			locOLED->setDisplay(4);
+			break;
+		case ota_failed:
+			locOLED->setDisplay(4);
+			break;
+		default:
+			if(pSize <= 5){
+				pSize = Update.size();
+				tSize = pSize;
+			}
+
+			pTemp = Update.progress();
+			if(pProg != pTemp){
+				pProg = pTemp;
+				pPersent = ((double)pProg / (double)pSize) * 100;
+				log_i("progress = %d", pTemp);
+
+				locOLED->setProgress(pPersent);
+			}
+			break;
+	}
+	locOTA->Status = 0;
+
 	if(locSonar->done){
 		locSonar->PortSonar(false);
 		locMando->PortMando(true);
 
 		airmarReading_t r = locAirmar->GetReading();
-		jDoc.clear();
-		jDoc["ts"] = now();
+		DynamicJsonDocument jDoc(4000);
+		jDoc["sd"] = sdSize;
+		jDoc["id"] = "aza";
 		jDoc["ws"] = r.ws;
 		jDoc["wd"] = r.wd;
+		jDoc["ts"] = now();
 		jDoc["at"] = r.at;
+		jDoc["dd"] = 3;
 		jDoc["bp"] = r.bp;
 		jDoc["wl"] = locSonar->GetDistance();
 
-		katun = "";
-		serializeJsonPretty(jDoc, katun);
+		String katun = "";
+		serializeJson(jDoc, katun);
+		serializeJsonPretty(jDoc, Serial);
+
+		jDoc.clear();
 
 		locMqtt->hantar("tick data", katun);
+
 
 		locOLED->pause(true);
 		while(!locOLED->done()){
@@ -227,73 +280,27 @@ void loop()
 		}
 
 		if (SD.begin(32)) {
-			log_i("sini a");
 			File dataFile = SD.open("/datalog.txt", FILE_APPEND);
-			log_i("sini b");
 
 			// if the file is available, write to it:
 			if (dataFile) {
 				dataFile.println(katun);
+
+				sdSize = dataFile.size();
 				Serial.println(dataFile.size());
 				dataFile.close();
-				// print to the serial port too:
-	//			Serial.println(katun);
 			}
 			// if the file isn't open, pop up an error:
 			else {
 				Serial.println("error opening datalog.txt");
 			}
-
 			SD.end();
 		}
-
 		locOLED->pause(false);
-
-
-
-//		delay(200);
-//
-//		locOLED->pause(true);
-//		log_i("sini A");
-//		while(!locOLED->done()){
-//			delay(10);
-//		}
-//
-//		delay(200);
-//
-//		if (SD.begin(32)) {
-//			log_i("sini a");
-//
-//
-//
-//			File dataFile = SD.open("/datalog.txt", FILE_APPEND);
-//			log_i("sini b");
-//
-//			// if the file is available, write to it:
-//			if (dataFile) {
-//				dataFile.println(katun);
-//				Serial.println(dataFile.size());
-//				dataFile.close();
-//				// print to the serial port too:
-//	//			Serial.println(katun);
-//			}
-//			// if the file isn't open, pop up an error:
-//			else {
-//				Serial.println("error opening datalog.txt");
-//			}
-//
-//
-//
-//			SD.end();
-//
-//			digitalWrite(32, HIGH);
-//
-//			delay(1000);
-//
-//		}
-//
-//		locOLED->pause(false);
 	}
+
+
+
 }
 
 
@@ -352,3 +359,50 @@ inline void _setupSPIFFiles(bool format) {
 //else {
 //	Serial.println("error opening datalog.txt");
 //}
+
+
+
+
+
+//		delay(200);
+//
+//		locOLED->pause(true);
+//		log_i("sini A");
+//		while(!locOLED->done()){
+//			delay(10);
+//		}
+//
+//		delay(200);
+//
+//		if (SD.begin(32)) {
+//			log_i("sini a");
+//
+//
+//
+//			File dataFile = SD.open("/datalog.txt", FILE_APPEND);
+//			log_i("sini b");
+//
+//			// if the file is available, write to it:
+//			if (dataFile) {
+//				dataFile.println(katun);
+//				Serial.println(dataFile.size());
+//				dataFile.close();
+//				// print to the serial port too:
+//	//			Serial.println(katun);
+//			}
+//			// if the file isn't open, pop up an error:
+//			else {
+//				Serial.println("error opening datalog.txt");
+//			}
+//
+//
+//
+//			SD.end();
+//
+//			digitalWrite(32, HIGH);
+//
+//			delay(1000);
+//
+//		}
+//
+//		locOLED->pause(false);

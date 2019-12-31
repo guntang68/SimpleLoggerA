@@ -39,7 +39,7 @@ void aProgress(OLEDDisplay* display, OLEDDisplayUiState* state, int16_t x, int16
 void aGraph(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 
 
-bool frameScroll = false;
+bool fs = false;
 bool freshDone = false;
 bool done = false;
 int8_t currentSet=0;
@@ -76,7 +76,7 @@ LocOLED::LocOLED(int core) {
 	iniLocOLED->sonarDistance = 1200;
 
 
-	frameScroll = true;
+	fs = true;
 
 	xTaskCreatePinnedToCore(iniLocOLED->loop, "loopLocOLED", 3072, NULL, 1, &loopLocOLED, core);
 
@@ -90,7 +90,7 @@ bool LocOLED::done() {
 
 void LocOLED::pause(bool pause) {
 	iniLocOLED->_pause = pause;
-	log_i("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< %d", pause);
+//	log_i("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< %d", pause);
 	if(pause == false){
 		enUpdate = true;
 	}
@@ -112,24 +112,16 @@ void LocOLED::loop(void* parameter) {
 			}
 
 			if(ui.getUiState()->frameState == IN_TRANSITION){
-
 				freshDone = false;
-
-				if(!frameScroll){
-					frameScroll = true;
-					digitalWrite(2, HIGH);
+				if(!fs){
+					fs = true;
 				}
-
 			}
 			else{
-
-
-				if(frameScroll){
-					frameScroll = false;
-					digitalWrite(2, LOW);
+				if(fs){
+					fs = false;
 					if(iniLocOLED->_pause){
 						iniLocOLED->_pause = false;
-						log_i(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
 						enUpdate = false;
 						freshDone = true;
 					}
@@ -158,10 +150,10 @@ void LocOLED::loop(void* parameter) {
 						ui.disableAutoTransition();
 						break;
 					case 4:
-						log_i("SINI");
 						frameCount = 2;
 						ui.setFrames(frames4, frameCount);
 						ui.disableAutoTransition();
+						ui.enableAutoTransition();
 						break;
 					default:
 						break;
@@ -396,9 +388,10 @@ inline void aGraph(OLEDDisplay* display, OLEDDisplayUiState* state, int16_t x, i
 	displayIcons(display);
 }
 
+void LocOLED::setDisplay(int set) {
+	newSet = set;
 
-
-
+}
 //
 //						case 4:
 ////							hantu("SINI");

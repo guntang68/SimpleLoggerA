@@ -49,6 +49,7 @@ public:
 	double sonarDistance;
 	bool done();
 	void pause(bool pause);
+	void setDisplay(int set);
 	std::vector<airmarReading_t> readingList;
 	airmarReading_t reading;
 

@@ -86,7 +86,6 @@ void LocAirmar::loop(void* parameter) {
 
 
 	while(true){
-
 		while(Serial2.available() > 0){
 			cr = Serial2.read();
 			if(cr >= 32 && cr <= 126 ){			//printable char only
@@ -102,16 +101,12 @@ void LocAirmar::loop(void* parameter) {
 
 				iniLocAirmar->_processAirmarData();
 
-				iniLocAirmar->siniLocOLED->reading = iniLocAirmar->reading;
+				iniLocAirmar->siniLocOLED->reading = iniLocAirmar->GetReading(); //iniLocAirmar->reading; iniLocAirmar->GetReading();
 				iniLocAirmar->siniLocOLED->readingList = iniLocAirmar->readingList;
 
 				iniLocAirmar->_airmarRaw = "";
 			}
-
-
 		}
-
-
 		delay(10);
 	}
 }
