@@ -249,6 +249,7 @@ void loop()
 	}
 	locOTA->Status = 0;
 
+
 	if(locSonar->done){
 		locSonar->PortSonar(false);
 		locMando->PortMando(true);
@@ -264,6 +265,7 @@ void loop()
 		jDoc["dd"] = 3;
 		jDoc["bp"] = r.bp;
 		jDoc["wl"] = locSonar->GetDistance();
+
 
 		String katun = "";
 		serializeJson(jDoc, katun);
